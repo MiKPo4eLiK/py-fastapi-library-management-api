@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from datetime import date
 from typing import List
+from library_book.models import PackagingType
 
 
 class AuthorCreate(BaseModel):
@@ -34,5 +35,5 @@ class BookCreate(BaseModel):
     title: str
     summary: str
     publication_date: date
-    packaging_type: str
+    packaging_type: PackagingType
     author_id: int

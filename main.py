@@ -13,7 +13,7 @@ from library_book import (
     schemas,
     crud,
 )
-from library_book.engine import (
+from library_book.database import (
     engine,
     SessionLocal,
 )
@@ -53,22 +53,35 @@ def get_author(author_id: int, db: Session = Depends(get_db)):
 
 
 @app.post("/authors/{author_id}/books/", response_model=schemas.Book)
-def create_book_for_author(author_id: int, book: schemas.BookCreate, db: Session = Depends(get_db)):
+def create_book_for_author(
+    author_id: int,
+    book: schemas.BookCreate,
+    db: Session = Depends(get_db),
+):
     author = crud.get_author(db, author_id=author_id)
     if not author:
         raise HTTPException(status_code=404, detail="Author not found")
 
-    book.author_id = author_id
-    return crud.create_book(db=db, book=book)
+    return crud.create_book(db=db, author_id=author_id, book=book)
 
 
 @app.get("/books/", response_model=List[schemas.Book])
-def get_books(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    books = crud.get_books(db, skip=skip, limit=limit)
+def get_books(
+    skip: int = 0,
+    limit: int = 10,
+    author_id: int | None = None,
+    db: Session = Depends(get_db)
+):
+    books = crud.get_books(db, skip=skip, limit=limit, author_id=author_id)
     return books
 
 
 @app.get("/books/by_author/{author_id}", response_model=List[schemas.Book])
-def get_books_by_author(author_id: int, db: Session = Depends(get_db)):
-    books = crud.get_books_by_author(db, author_id=author_id)
+def get_books_by_author(
+    author_id: int,
+    skip: int = 0,
+    limit: int = 10,
+    db: Session = Depends(get_db)
+):
+    books = crud.get_books_by_author(db, author_id=author_id, skip=skip, limit=limit)
     return books

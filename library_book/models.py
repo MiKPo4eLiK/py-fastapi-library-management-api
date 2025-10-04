@@ -8,7 +8,7 @@ from sqlalchemy import (
     Enum,
 )
 from sqlalchemy.orm import relationship
-from library_book.engine import Base
+from library_book.database import Base
 
 
 class PackagingType(StrEnum):
