@@ -42,12 +42,18 @@ def create_book(db: Session, author_id: int, book: schemas.BookCreate):
         db.refresh(db_book)
         return db_book
 
-    except IntegrityError:
+    except IntegrityError as e:
         db.rollback()
-        raise HTTPException(
-            status_code=400,
-            detail="Integrity error: Book with this title already exists or invalid data provided.",
-        )
+        if "UNIQUE constraint failed" in str(e.orig):
+            raise HTTPException(
+                status_code=409,
+                detail="Book with this title already exists."
+            )
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid data provided."
+            )
 
 
 def get_books(db: Session, skip: int = 0, limit: int = 10, author_id: Optional[int] = None) -> List[models.LBBook]:
@@ -57,13 +63,3 @@ def get_books(db: Session, skip: int = 0, limit: int = 10, author_id: Optional[i
         query = query.filter(models.LBBook.author_id == author_id)
 
     return query.offset(skip).limit(limit).all()
-
-
-def get_books_by_author(db: Session, author_id: int, skip: int = 0, limit: int = 10) -> List[models.LBBook]:
-    return (
-        db.query(models.LBBook)
-        .filter(models.LBBook.author_id == author_id)
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )

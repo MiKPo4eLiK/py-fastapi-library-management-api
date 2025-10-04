@@ -36,4 +36,3 @@ class BookCreate(BaseModel):
     summary: str
     publication_date: date
     packaging_type: PackagingType
-    author_id: int

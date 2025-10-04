@@ -1,26 +1,10 @@
-from typing import (
-    List,
-    Generator,
-)
-from fastapi import (
-    FastAPI,
-    Depends,
-    HTTPException,
-)
+from typing import List, Generator, Optional
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from library_book import (
-    models,
-    schemas,
-    crud,
-)
-from library_book.database import (
-    engine,
-    SessionLocal,
-)
-
+from library_book import models, schemas, crud
+from library_book.database import engine, SessionLocal
 
 models.Base.metadata.create_all(bind=engine)
-
 
 app = FastAPI(title="Library Management API")
 
@@ -40,8 +24,7 @@ def create_author(author: schemas.AuthorCreate, db: Session = Depends(get_db)):
 
 @app.get("/authors/", response_model=List[schemas.Author])
 def get_authors(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    authors = crud.get_authors(db, skip=skip, limit=limit)
-    return authors
+    return crud.get_authors(db, skip=skip, limit=limit)
 
 
 @app.get("/authors/{author_id}", response_model=schemas.Author)
@@ -61,7 +44,6 @@ def create_book_for_author(
     author = crud.get_author(db, author_id=author_id)
     if not author:
         raise HTTPException(status_code=404, detail="Author not found")
-
     return crud.create_book(db=db, author_id=author_id, book=book)
 
 
@@ -69,19 +51,7 @@ def create_book_for_author(
 def get_books(
     skip: int = 0,
     limit: int = 10,
-    author_id: int | None = None,
+    author_id: Optional[int] = None,
     db: Session = Depends(get_db)
 ):
-    books = crud.get_books(db, skip=skip, limit=limit, author_id=author_id)
-    return books
-
-
-@app.get("/books/by_author/{author_id}", response_model=List[schemas.Book])
-def get_books_by_author(
-    author_id: int,
-    skip: int = 0,
-    limit: int = 10,
-    db: Session = Depends(get_db)
-):
-    books = crud.get_books_by_author(db, author_id=author_id, skip=skip, limit=limit)
-    return books
+    return crud.get_books(db, skip=skip, limit=limit, author_id=author_id)
